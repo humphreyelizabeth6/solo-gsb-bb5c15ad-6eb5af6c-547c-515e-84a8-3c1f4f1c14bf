@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.git/
+.gitignore
+tests/
+pytest.ini
+*.db
+*.db-wal
+*.db-shm
+data/
+.pytest_cache/
+README.md
+.env

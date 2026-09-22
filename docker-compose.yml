@@ -1,0 +1,31 @@
+services:
+  gpu-scheduler:
+    build: .
+    image: gpu-fair-queue:latest
+    container_name: gpu-fair-queue
+    ports:
+      # host:container — API is reachable at http://localhost:8000
+      - "8000:8000"
+    environment:
+      # Total number of GPUs shared across all tenants.
+      TOTAL_GPUS: "8"
+      # WDRR base quantum in GPU-seconds per weight unit per round.
+      BASE_QUANTUM: "60"
+      # Aging: extra quantum per weight unit per second the head job waited.
+      AGING_RATE: "1"
+      # Aging bonus cap, as a multiple of the base quantum.
+      AGING_CAP_FACTOR: "10"
+      DB_PATH: /data/scheduler.db
+    volumes:
+      # SQLite database persists across container restarts / recreations.
+      - gpu_scheduler_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json,urllib.request,sys; r=json.load(urllib.request.urlopen('http://127.0.0.1:8000/health')); sys.exit(0 if r['status']=='ok' else 1)"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  gpu_scheduler_data:
